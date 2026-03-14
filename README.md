@@ -131,7 +131,7 @@ agent-system/
 │   │   ├── calculator.py          # CalculatorTool
 │   │   ├── text_processor.py      # TextProcessorTool
 │   │   ├── weather_mock.py        # WeatherMockTool
-│   │   ├── base64_tool.py         # Base64Tool  ← new
+│   │   ├── base64_tool.py         # Base64Tool 
 │   │   └── fallback_explainer.py  # FallbackExplainerTool (last-resort fallback)
 │   ├── storage/db.py              # SQLite CRUD
 │   └── tests/test_all.py          # 55 unit + integration tests
@@ -180,7 +180,7 @@ Is it multi-step?  (MultiStepOrchestrator.is_multistep)
                   │
                   └─ No match → FallbackExplainerTool
                                   .prepare(error)   ← injects error context
-                                  .execute(task)    ← returns human explanation + 💡 tips
+                                  .execute(task)    ← returns human explanation + tips
 ```
 
 ---
@@ -300,8 +300,6 @@ Encodes and decodes Base64 strings in multiple modes.
 | `base64 encode "user@example.com"` | `dXNlckBleGFtcGxlLmNvbQ==` |
 | `url-safe base64 encode "hello+world"` | URL-safe encoded (no `+` or `/`) |
 | `url-safe base64 decode "aGVsbG8="` | `hello` |
-| `validate "aGVsbG8="` | `✓ Valid — standard and URL-safe` |
-| `validate "not valid!!!"` | `✗ Not valid Base64` |
 | `base64 info "SGVsbG8gV29ybGQ="` | Encoded length, decoded bytes, content type, decoded value |
 | `base64 "aGVsbG8="` | Auto-detects → decodes → `hello` |
 | `base64 "hello world"` | Auto-detects → encodes → `aGVsbG8gd29ybGQ=` |
@@ -352,7 +350,7 @@ Output:  24
 
 ### Example 4 — Uppercase then reverse
 ```
-Task:    uppercase 'hello' then reverse the result
+Task:    uppercase 'hello' followed by reverse the result
 Stage 1: TextProcessorTool → HELLO
 Stage 2: TextProcessorTool → OLLEH
 Output:  OLLEH
@@ -371,8 +369,22 @@ Output:  4 characters
 ```
 Task:    weather in Tokyo, then uppercase the condition
 Stage 1: WeatherMockTool   → ☀️ Weather in Tokyo\nCondition: Clear\n...
-Stage 2: TextProcessorTool →☀️ WEATHER IN TOKYO\NCONDITION: CLEAR\N...
-Output:  (uppercased full report)
+Stage 2: TextProcessorTool →☀️ Weather in Tokyo\NCondition: CLEAR\N...
+Output: Weather in Tokyo
+        Condition: CLEAR
+        Temperature: 24°C / 75.2°F
+        Humidity: 58%
+        Wind: 10 km/h
+        As of: 2026-03-14 22:49 UTC (mock data)
+```
+
+### Example 7 — Calculate then reverse followed by Add operation (Chain with repeat callback)
+```
+Task:    calculate 6 * 7 after that reverse the result, then add 4
+Stage 1: CalculatorTool   → 42
+Stage 2: TextProcessorTool → 24
+Stage 3: CalculatorTool → 28
+Output:  28
 ```
 
 ---
@@ -530,7 +542,7 @@ tests/test_all.py::TestMultiStepEndToEnd::test_single_step_not_treated_as_multis
 ## Bonus Features
 
 ### ✅ Base64Tool (new)
-Five operations: standard encode/decode, URL-safe encode/decode, validate, inspect (info), and auto-detect mode. No external dependencies — uses Python's built-in `base64` module. Both validators enforce the correct character sets (`[A-Za-z0-9+/=]` for standard, `[A-Za-z0-9\-_=]` for URL-safe) before attempting decode, preventing false positives on arbitrary strings.
+Four operations: standard encode/decode, URL-safe encode/decode, inspect (info), and auto-detect mode. No external dependencies — uses Python's built-in `base64` module. Both validators enforce the correct character sets (`[A-Za-z0-9+/=]` for standard, `[A-Za-z0-9\-_=]` for URL-safe) before attempting decode, preventing false positives on arbitrary strings.
 
 ### ✅ Multi-Step Orchestration (new)
 `MultiStepOrchestrator` in `agent/orchestrator.py` detects compound tasks by scanning for chaining connectors (`then`, `and then`, `followed by`, `after that`, `, then`). It splits the task, executes each sub-task via `AgentController.run_single()`, and injects the previous output when the next sub-task references `the result`, `it`, `that`, or `{result}`. All sub-traces are merged into one flat numbered list with `[STAGE N]` prefixes. The API response includes a `sub_results` array exposing per-stage details.
@@ -539,7 +551,7 @@ Five operations: standard encode/decode, URL-safe encode/decode, validate, inspe
 `Dockerfile.backend` (Python 3.11 slim + Uvicorn), `Dockerfile.frontend` (Node 20 → Nginx alpine multi-stage), `docker-compose.yml` (health-checked backend gate, named SQLite volume), `nginx.conf` (static serving + `/api` reverse proxy). Each service uses its own `context:` path to avoid Windows path-resolution issues.
 
 ### ✅ Retry / Fallback Logic
-`FallbackExplainerTool` is a guaranteed last-resort handler. `_fallback_tool()` always returns a tool — first any other domain tool that `can_handle()` the input, then `FallbackExplainerTool` as the backstop. Error context is injected via `prepare(error)` so explanations are tailored to the exact failure mode.
+`FallbackExplainerTool` is the fallback error handler. `_fallback_tool()` always returns a tool — first any other domain tool that `can_handle()` the input, then `FallbackExplainerTool` as the backstop. Error context is injected via `prepare(error)` so explanations are tailored to the exact failure mode.
 
 ### ⬜ Real-Time Streaming
 Not implemented. Planned via `EventSourceResponse` in FastAPI.
@@ -551,7 +563,7 @@ Not implemented. Planned JWT-based roles: `user` (own tasks only) and `admin` (a
 
 ## Assumptions & Trade-offs
 
-**Heuristic tool scoring, not LLM routing.** Fast, deterministic, no API keys needed. Trade-off: unusual phrasing can confuse the scorer. An LLM router handles ambiguity better but adds latency and cost.
+**Heuristic tool scoring, not LLM routing.** Fast, deterministic, no API keys needed. Trade-off: Phrasing is specific for the scorer. An LLM router handles ambiguity better but adds latency and cost.
 
 **Output injection is reference-based, not semantic.** The orchestrator looks for literal phrases ("the result", "it", "that") to decide when to thread outputs. This is predictable and transparent but won't infer intent from novel phrasing. A semantic approach would require NLP or an LLM.
 
@@ -559,7 +571,7 @@ Not implemented. Planned JWT-based roles: `user` (own tasks only) and `admin` (a
 
 **"count" and "characters" are broad keywords.** Adding them to `TextProcessorTool` enables chained tasks like `count the characters of the result`, but could cause that tool to be chosen for unrelated inputs that happen to include those words. The scoring booster (`+15` only when specific text-op patterns are present) mitigates most false positives.
 
-**SQLite for persistence.** Zero-config and appropriate for single-instance use. The storage layer (`storage/db.py`) is fully isolated — swap for PostgreSQL by replacing that one module.
+**SQLite for persistence.** Zero-config and appropriate for single-instance use. The storage layer (`storage/db.py`) is fully isolated, it can be swapped for PostgreSQL by replacing that one module.
 
 **CORS fully open.** `allow_origins=["*"]` is intentional for local development. Lock to known origins before production.
 
@@ -578,7 +590,7 @@ Not implemented. Planned JWT-based roles: `user` (own tasks only) and `admin` (a
 | React frontend (all components + styling) | 60 min |
 | Tests (93 cases) | 40 min |
 | Docker, Nginx, README | 45 min |
-| Error Handling, Code Cleanup, Issue Fixes | 45 mins |
+| Error Handling, Code Cleanup, Issue Fixes | 60 mins |
 
 ---
 

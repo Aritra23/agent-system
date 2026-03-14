@@ -2,12 +2,12 @@ import re
 import base64
 import binascii
 from .base import BaseTool, ToolResult
-
-
+ 
+ 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
-
+ 
 def _is_valid_base64(s: str) -> bool:
     """Return True if s is a well-formed standard base64 string."""
     s = s.strip()
@@ -20,8 +20,8 @@ def _is_valid_base64(s: str) -> bool:
         return True
     except Exception:
         return False
-
-
+ 
+ 
 def _is_valid_urlsafe_base64(s: str) -> bool:
     """Return True if s is a well-formed URL-safe base64 string."""
     s = s.strip()
@@ -34,22 +34,29 @@ def _is_valid_urlsafe_base64(s: str) -> bool:
         return True
     except Exception:
         return False
-
-
+ 
+ 
 def _auto_detect_operation(text: str) -> str:
     """
     Guess the intended operation from the text.
     Returns one of: 'encode', 'decode', 'url_encode', 'url_decode',
                     'validate', 'info', 'auto'
+ 
+    Order matters: url_decode must be checked before url_encode because
+    both share the 'url-safe' / 'urlsafe' trigger.  The word 'decode'
+    is the tiebreaker — if it is present alongside 'url-safe', the user
+    clearly wants url_decode, not url_encode.
     """
     lower = text.lower()
-    # After — url-safe is detected once, then decode/encode disambiguates
+ 
     is_url_safe = bool(re.search(r'\burl[\s-]?safe\b|\burlsafe\b', lower))
-
+ 
     if is_url_safe:
+        # Check decode first — "url-safe decode" must not match url_encode
         if re.search(r'\bdecode\b', lower):
-            return 'url_decode'   # "url-safe ... decode" → correct
-        return 'url_encode'       # "url-safe ... encode" → correct
+            return 'url_decode'
+        return 'url_encode'
+ 
     if re.search(r'\bdecode\b|\bfrom\s+base64\b|\bbase64\s+to\b', lower):
         return 'decode'
     if re.search(r'\bencode\b|\bto\s+base64\b|\bbase64\s+of\b|\bconvert.*base64\b', lower):
@@ -59,23 +66,23 @@ def _auto_detect_operation(text: str) -> str:
     if re.search(r'\binfo\b|\bdetails\b|\banalyse\b|\banalyze\b|\binspect\b', lower):
         return 'info'
     return 'auto'
-
-
+ 
+ 
 def _extract_target(text: str) -> str:
     """
     Pull the subject string out of a natural language instruction.
     Tries quoted strings first, then strips common command words.
     """
     # Quoted strings (single or double quotes)
-    for pattern in [r'"([^"]*)"', r"'([^']*)'"]:
+    for pattern in [r'"([^"]*)"', r"'([^']*)'"]:  # * allows empty strings
         m = re.search(pattern, text)
         if m:
             return m.group(1)
-
+ 
     # After a colon
     if ":" in text:
         return text.split(":", 1)[1].strip()
-
+ 
     # Strip command vocabulary
     strip_terms = [
         r'\bbase64\b', r'\bencode\b', r'\bdecode\b', r'\bconvert\b',
@@ -89,17 +96,17 @@ def _extract_target(text: str) -> str:
     for term in strip_terms:
         result = re.sub(term, '', result, flags=re.IGNORECASE)
     result = re.sub(r'\s+', ' ', result).strip(" ,?!.")
-    return result
-
-
+    return result  # may be "" for empty quoted input — that is correct
+ 
+ 
 # ---------------------------------------------------------------------------
 # Tool
 # ---------------------------------------------------------------------------
-
+ 
 class Base64Tool(BaseTool):
     """
     Handles Base64 encoding and decoding operations.
-
+ 
     Supported operations
     --------------------
     encode   – standard Base64 encode a plaintext string
@@ -110,7 +117,7 @@ class Base64Tool(BaseTool):
     info     – inspect an encoded string (length, padding, decoded preview)
     auto     – detect from context: if input looks like Base64, decode it;
                otherwise encode it
-
+ 
     Examples
     --------
     "base64 encode 'hello world'"
@@ -120,18 +127,18 @@ class Base64Tool(BaseTool):
     "base64 info 'SGVsbG8gV29ybGQ='"
     "base64 'auto detect me'"           → auto mode
     """
-
+ 
     @property
     def name(self) -> str:
         return "Base64Tool"
-
+ 
     @property
     def description(self) -> str:
         return (
             "Encode/decode Base64: standard, URL-safe, validate, inspect, "
             "and auto-detect mode"
         )
-
+ 
     @property
     def keywords(self) -> list[str]:
         return [
@@ -140,21 +147,21 @@ class Base64Tool(BaseTool):
             "encoding", "decoding",
             "urlsafe", "url-safe",
         ]
-
+ 
     # ------------------------------------------------------------------
     # Main entry point
     # ------------------------------------------------------------------
-
+ 
     def execute(self, input_text: str) -> ToolResult:
         steps = [f'Received input: "{input_text}"']
         steps.append("Selected tool: Base64Tool")
-
+ 
         operation = _auto_detect_operation(input_text)
         steps.append(f"Detected operation: {operation}")
-
+ 
         target = _extract_target(input_text)
         steps.append(f'Extracted target: "{target}"')
-
+ 
         if operation == "encode":
             return self._encode(target, steps, url_safe=False)
         elif operation == "decode":
@@ -169,11 +176,11 @@ class Base64Tool(BaseTool):
             return self._info(target, steps)
         else:  # auto
             return self._auto(target, steps)
-
+ 
     # ------------------------------------------------------------------
     # Operations
     # ------------------------------------------------------------------
-
+ 
     def _encode(self, target: str, steps: list[str], url_safe: bool) -> ToolResult:
         label = "URL-safe Base64" if url_safe else "standard Base64"
         steps.append(f"Operation: {label} encode")
@@ -194,7 +201,7 @@ class Base64Tool(BaseTool):
             return ToolResult(
                 output=None, steps=steps, error=f"Could not encode: {e}"
             )
-
+ 
     def _decode(self, target: str, steps: list[str], url_safe: bool) -> ToolResult:
         label = "URL-safe Base64" if url_safe else "standard Base64"
         steps.append(f"Operation: {label} decode")
@@ -223,12 +230,12 @@ class Base64Tool(BaseTool):
                     "Make sure the input is a valid Base64 string."
                 ),
             )
-
+ 
     def _validate(self, target: str, steps: list[str]) -> ToolResult:
         steps.append("Operation: validate Base64 string")
         is_std = _is_valid_base64(target)
         is_url = _is_valid_urlsafe_base64(target)
-
+ 
         if is_std and is_url:
             verdict = "✓ Valid — compatible with both standard and URL-safe Base64"
         elif is_std:
@@ -237,16 +244,16 @@ class Base64Tool(BaseTool):
             verdict = "✓ Valid URL-safe Base64 (uses - and _ instead of + and /)"
         else:
             verdict = "✗ Not valid Base64 — contains illegal characters or bad padding"
-
+ 
         steps.append(f"Validation result: {verdict}")
         steps.append("Returning result to user")
         return ToolResult(output=verdict, steps=steps)
-
+ 
     def _info(self, target: str, steps: list[str]) -> ToolResult:
         steps.append("Operation: inspect Base64 string")
         target = target.strip()
         padded = target + "=" * (-len(target) % 4)
-
+ 
         is_valid = _is_valid_base64(target)
         if not is_valid:
             steps.append("String is not valid Base64 — cannot inspect")
@@ -255,7 +262,7 @@ class Base64Tool(BaseTool):
                 steps=steps,
                 error=f'"{target}" is not a valid Base64 string.',
             )
-
+ 
         raw = base64.b64decode(padded)
         try:
             preview = raw.decode("utf-8")
@@ -263,7 +270,7 @@ class Base64Tool(BaseTool):
         except UnicodeDecodeError:
             preview = repr(raw[:16])
             encoding_note = "binary data"
-
+ 
         padding = len(padded) - len(target)
         info = (
             f"Encoded length : {len(target)} characters\n"
@@ -276,7 +283,7 @@ class Base64Tool(BaseTool):
         steps.append("Extracted metadata from encoded string")
         steps.append("Returning result to user")
         return ToolResult(output=info, steps=steps)
-
+ 
     def _auto(self, target: str, steps: list[str]) -> ToolResult:
         """
         Heuristic auto-mode: if the target looks like Base64, decode it;
@@ -284,7 +291,7 @@ class Base64Tool(BaseTool):
         """
         steps.append("Operation: auto-detect (encode or decode?)")
         target_stripped = target.strip()
-
+ 
         if _is_valid_base64(target_stripped) and len(target_stripped) >= 4:
             # Looks like Base64 — try decoding
             steps.append("Target appears to be Base64 — attempting decode")
@@ -292,7 +299,7 @@ class Base64Tool(BaseTool):
             if not result.error:
                 return result
             steps.append("Decode failed — falling back to encode mode")
-
+ 
         # Treat as plaintext to encode
         steps.append("Target is plaintext — encoding to Base64")
         return self._encode(target_stripped, steps, url_safe=False)

@@ -2,8 +2,8 @@ import re
 import random
 from datetime import datetime
 from .base import BaseTool, ToolResult
-
-
+ 
+ 
 WEATHER_DB: dict[str, dict] = {
     "london": {"condition": "Overcast", "temp_c": 12, "humidity": 82, "wind_kph": 18, "emoji": "☁️"},
     "new york": {"condition": "Partly Cloudy", "temp_c": 18, "humidity": 65, "wind_kph": 22, "emoji": "⛅"},
@@ -26,26 +26,26 @@ WEATHER_DB: dict[str, dict] = {
     "rome": {"condition": "Sunny", "temp_c": 23, "humidity": 50, "wind_kph": 13, "emoji": "☀️"},
     "beijing": {"condition": "Smoggy", "temp_c": 19, "humidity": 70, "wind_kph": 20, "emoji": "🌫️"},
 }
-
+ 
 GENERIC_CONDITIONS = [
     {"condition": "Partly Cloudy", "temp_c": 17, "humidity": 65, "wind_kph": 15, "emoji": "⛅"},
     {"condition": "Sunny", "temp_c": 22, "humidity": 50, "wind_kph": 12, "emoji": "☀️"},
     {"condition": "Overcast", "temp_c": 13, "humidity": 75, "wind_kph": 20, "emoji": "☁️"},
     {"condition": "Light Rain", "temp_c": 11, "humidity": 80, "wind_kph": 18, "emoji": "🌧️"},
 ]
-
-
+ 
+ 
 class WeatherMockTool(BaseTool):
     """Returns mock weather data for a given city."""
-
+ 
     @property
     def name(self) -> str:
         return "WeatherMockTool"
-
+ 
     @property
     def description(self) -> str:
         return "Returns mock weather for a city: temperature, condition, humidity, wind"
-
+ 
     @property
     def keywords(self) -> list[str]:
         return [
@@ -53,13 +53,13 @@ class WeatherMockTool(BaseTool):
             "cloudy", "humidity", "wind", "climate", "degrees",
             "hot", "cold", "storm", "snow",
         ]
-
+ 
     def execute(self, input_text: str) -> ToolResult:
         steps = [f'Received input: "{input_text}"']
         steps.append("Selected tool: WeatherMockTool")
-
+ 
         city = self._extract_city(input_text)
-
+ 
         # Fail early if no city name could be extracted at all
         if not city:
             steps.append("Error: no city name found in input")
@@ -68,12 +68,12 @@ class WeatherMockTool(BaseTool):
                 steps=steps,
                 error="No city name found in your request. Try: \"weather in London\" or \"forecast for Tokyo\".",
             )
-
+ 
         steps.append(f"Extracted city name: \"{city}\"")
-
+ 
         city_key = city.lower().strip()
         data = WEATHER_DB.get(city_key)
-
+ 
         if data:
             steps.append(f"Found city in weather database: {city}")
         else:
@@ -84,14 +84,14 @@ class WeatherMockTool(BaseTool):
                     city = known_city.title()
                     steps.append(f"Fuzzy matched city: \"{city}\"")
                     break
-
+ 
         if not data:
             data = random.choice(GENERIC_CONDITIONS)
             steps.append(f"City not in database, generating mock data for \"{city}\"")
-
+ 
         temp_f = round(data["temp_c"] * 9 / 5 + 32, 1)
         timestamp = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
-
+ 
         result = (
             f"{data['emoji']} Weather in {city.title()}\n"
             f"Condition: {data['condition']}\n"
@@ -100,11 +100,11 @@ class WeatherMockTool(BaseTool):
             f"Wind: {data['wind_kph']} km/h\n"
             f"As of: {timestamp} (mock data)"
         )
-
+ 
         steps.append(f"Assembled weather report for {city.title()}")
         steps.append("Returning result to user")
         return ToolResult(output=result, steps=steps)
-
+ 
     def _extract_city(self, text: str) -> str:
         """Extract city name from text like 'weather in London' or 'what's the weather for Tokyo'."""
         patterns = [
@@ -117,7 +117,7 @@ class WeatherMockTool(BaseTool):
             m = re.search(pattern, text, re.IGNORECASE)
             if m:
                 return m.group(1).strip()
-
+ 
         # Last resort: strip command words and return remainder
         stripped = re.sub(
             r'\b(weather|forecast|temperature|what|is|the|in|for|at|of|today|now|get|show|tell|me|degrees|celsius|fahrenheit)\b',

@@ -22,16 +22,23 @@ class CalculatorTool(BaseTool):
 
     WORD_OPS = {
         " plus ": " + ",
+        " add ": " + ",
+        " added to ": " + ",
         " minus ": " - ",
+        " subtract ": " - ",
+        " subtracted from ": " - ",
         " times ": " * ",
+        " multiply ": " * ",
         " multiplied by ": " * ",
         " divided by ": " / ",
+        " divide ": " / ",
         " over ": " / ",
         " to the power of ": " ** ",
         " squared": " ** 2",
         " cubed": " ** 3",
         " mod ": " % ",
         " modulo ": " % ",
+        " power ": " ** ",
     }
 
     @property
@@ -45,7 +52,7 @@ class CalculatorTool(BaseTool):
     @property
     def keywords(self) -> list[str]:
         return [
-            "calculate", "compute", "eval",
+            "calculate", "compute", "eval", "add", "subtract", "multiply", "divide", "added", "subtracted", "divided",
             "plus", "minus", "times", "divided by", "multiplied",
             "sum", "product", "difference", "quotient",
             "square root", "sqrt", "power", "squared", "cubed",
@@ -57,11 +64,11 @@ class CalculatorTool(BaseTool):
     def execute(self, input_text: str) -> ToolResult:
         steps = [f'Received input: "{input_text}"']
         steps.append("Selected tool: CalculatorTool")
-
+ 
         # Handle sqrt specially
         sqrt_match = re.search(r'sqrt\s*\(?\s*(\d+(?:\.\d+)?)\s*\)?', input_text, re.IGNORECASE)
         square_root_match = re.search(r'square\s*root\s*of\s*(\d+(?:\.\d+)?)', input_text, re.IGNORECASE)
-
+ 
         if sqrt_match or square_root_match:
             m = sqrt_match or square_root_match
             val = float(m.group(1))
@@ -70,11 +77,11 @@ class CalculatorTool(BaseTool):
             steps.append(f"Computed: √{val} = {self._format(result)}")
             steps.append("Returning result to user")
             return ToolResult(output=self._format(result), steps=steps)
-
+ 
         # Extract numeric expression
         expr = self._extract_expression(input_text)
         steps.append(f"Extracted expression: {expr}")
-
+ 
         try:
             tree = ast.parse(expr, mode='eval')
             result = self._eval_node(tree.body)
@@ -88,25 +95,25 @@ class CalculatorTool(BaseTool):
         except Exception as e:
             steps.append(f"Error evaluating expression: {e}")
             return ToolResult(output=None, steps=steps, error=f"Could not parse expression: '{expr}'. Try something like '3 + 5' or 'sqrt(16)'.")
-
+ 
     def _extract_expression(self, text: str) -> str:
         """Convert natural language math to a parseable expression."""
         expr = text.lower()
-
+ 
         # Replace word operators
         for word, symbol in self.WORD_OPS.items():
             expr = expr.replace(word, symbol)
-
+ 
         # Strip non-math characters but keep operators and digits
         expr = re.sub(r'[^0-9+\-*/().\s%^]', '', expr)
-
+ 
         # Replace ^ with ** for power
         expr = expr.replace('^', '**')
-
+ 
         # Remove multiple spaces
         expr = re.sub(r'\s+', '', expr)
         return expr.strip()
-
+ 
     def _eval_node(self, node):
         """Safely evaluate an AST node."""
         if isinstance(node, ast.Constant):
@@ -127,9 +134,10 @@ class CalculatorTool(BaseTool):
             return op_func(self._eval_node(node.operand))
         else:
             raise ValueError(f"Unsupported node type: {type(node).__name__}")
-
+ 
     def _format(self, value: float) -> str:
         """Format result: show int if whole number, else up to 6 decimal places."""
         if isinstance(value, float) and value.is_integer():
             return str(int(value))
         return f"{value:.6g}"
+ 
