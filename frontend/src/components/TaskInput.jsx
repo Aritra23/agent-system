@@ -9,6 +9,7 @@ const EXAMPLES = [
   'reverse "racecar"',
   'weather in New York',
   'palindrome check "A man a plan a canal Panama"',
+  'base64 encode "hello world"'
 ]
 
 export default function TaskInput({ onSubmit, loading }) {

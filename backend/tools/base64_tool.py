@@ -43,11 +43,13 @@ def _auto_detect_operation(text: str) -> str:
                     'validate', 'info', 'auto'
     """
     lower = text.lower()
+    # After — url-safe is detected once, then decode/encode disambiguates
+    is_url_safe = bool(re.search(r'\burl[\s-]?safe\b|\burlsafe\b', lower))
 
-    if re.search(r'\burl.safe\b|\burl\s+encode\b|\burlsafe\b', lower):
-        return 'url_encode'
-    if re.search(r'\burl.safe\b|\burl\s+decode\b', lower):
-        return 'url_decode'
+    if is_url_safe:
+        if re.search(r'\bdecode\b', lower):
+            return 'url_decode'   # "url-safe ... decode" → correct
+        return 'url_encode'       # "url-safe ... encode" → correct
     if re.search(r'\bdecode\b|\bfrom\s+base64\b|\bbase64\s+to\b', lower):
         return 'decode'
     if re.search(r'\bencode\b|\bto\s+base64\b|\bbase64\s+of\b|\bconvert.*base64\b', lower):
@@ -65,7 +67,7 @@ def _extract_target(text: str) -> str:
     Tries quoted strings first, then strips common command words.
     """
     # Quoted strings (single or double quotes)
-    for pattern in [r'"([^"]+)"', r"'([^']+)'"]:
+    for pattern in [r'"([^"]*)"', r"'([^']*)'"]:
         m = re.search(pattern, text)
         if m:
             return m.group(1)
@@ -87,7 +89,7 @@ def _extract_target(text: str) -> str:
     for term in strip_terms:
         result = re.sub(term, '', result, flags=re.IGNORECASE)
     result = re.sub(r'\s+', ' ', result).strip(" ,?!.")
-    return result if result else text
+    return result
 
 
 # ---------------------------------------------------------------------------

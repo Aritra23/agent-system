@@ -425,104 +425,104 @@ pip install pytest
 python -m pytest tests/test_all.py -v
 ```
 
-**Results: 55 passed, 0 failed**
+**Results: 93 passed, 0 failed**
 
 ```
-tests/test_all.py::TestTextProcessorTool::test_uppercase                          PASSED
-tests/test_all.py::TestTextProcessorTool::test_lowercase                          PASSED
-tests/test_all.py::TestTextProcessorTool::test_title_case                         PASSED
-tests/test_all.py::TestTextProcessorTool::test_reverse                            PASSED
-tests/test_all.py::TestTextProcessorTool::test_word_count                         PASSED
-tests/test_all.py::TestTextProcessorTool::test_palindrome_true                    PASSED
-tests/test_all.py::TestTextProcessorTool::test_palindrome_false                   PASSED
-tests/test_all.py::TestTextProcessorTool::test_steps_populated                    PASSED
-tests/test_all.py::TestTextProcessorTool::test_can_handle_positive                PASSED
-tests/test_all.py::TestTextProcessorTool::test_can_handle_negative                PASSED
-tests/test_all.py::TestCalculatorTool::test_addition                              PASSED
-tests/test_all.py::TestCalculatorTool::test_subtraction                           PASSED
-tests/test_all.py::TestCalculatorTool::test_multiplication                        PASSED
-tests/test_all.py::TestCalculatorTool::test_division                              PASSED
-tests/test_all.py::TestCalculatorTool::test_power                                 PASSED
-tests/test_all.py::TestCalculatorTool::test_sqrt                                  PASSED
-tests/test_all.py::TestCalculatorTool::test_square_root_natural_language          PASSED
-tests/test_all.py::TestCalculatorTool::test_word_operators                        PASSED
-tests/test_all.py::TestCalculatorTool::test_division_by_zero                      PASSED
-tests/test_all.py::TestCalculatorTool::test_complex_expression                    PASSED
-tests/test_all.py::TestCalculatorTool::test_can_handle_positive                   PASSED
-tests/test_all.py::TestCalculatorTool::test_can_handle_negative                   PASSED
-tests/test_all.py::TestWeatherMockTool::test_known_city                           PASSED
-tests/test_all.py::TestWeatherMockTool::test_unknown_city_still_returns_result    PASSED
-tests/test_all.py::TestWeatherMockTool::test_output_contains_humidity             PASSED
-tests/test_all.py::TestWeatherMockTool::test_output_contains_wind                 PASSED
-tests/test_all.py::TestWeatherMockTool::test_fahrenheit_included                  PASSED
-tests/test_all.py::TestWeatherMockTool::test_no_city_returns_error                PASSED
-tests/test_all.py::TestWeatherMockTool::test_bare_forecast_returns_error          PASSED
-tests/test_all.py::TestWeatherMockTool::test_can_handle_positive                  PASSED
-tests/test_all.py::TestWeatherMockTool::test_can_handle_negative                  PASSED
-tests/test_all.py::TestBase64Tool::test_encode_hello_world                        PASSED
-tests/test_all.py::TestBase64Tool::test_encode_empty_string                       PASSED
-tests/test_all.py::TestBase64Tool::test_encode_special_chars                      PASSED
-tests/test_all.py::TestBase64Tool::test_encode_numbers                            PASSED
-tests/test_all.py::TestBase64Tool::test_decode_hello_world                        PASSED
-tests/test_all.py::TestBase64Tool::test_decode_without_padding                    PASSED
-tests/test_all.py::TestBase64Tool::test_decode_invalid_raises_error               PASSED
-tests/test_all.py::TestBase64Tool::test_decode_reverses_encode                    PASSED
-tests/test_all.py::TestBase64Tool::test_url_safe_encode                           PASSED
-tests/test_all.py::TestBase64Tool::test_url_safe_decode                           PASSED
-tests/test_all.py::TestBase64Tool::test_validate_valid_string                     PASSED
-tests/test_all.py::TestBase64Tool::test_validate_invalid_string                   PASSED
-tests/test_all.py::TestBase64Tool::test_info_returns_metadata                     PASSED
-tests/test_all.py::TestBase64Tool::test_info_invalid_string_errors                PASSED
-tests/test_all.py::TestBase64Tool::test_auto_detect_decodes_valid_b64             PASSED
-tests/test_all.py::TestBase64Tool::test_auto_detect_encodes_plaintext             PASSED
-tests/test_all.py::TestBase64Tool::test_steps_populated                           PASSED
-tests/test_all.py::TestBase64Tool::test_steps_include_operation                   PASSED
-tests/test_all.py::TestBase64Tool::test_can_handle_base64                         PASSED
-tests/test_all.py::TestBase64Tool::test_cannot_handle_weather                     PASSED
-tests/test_all.py::TestFallbackExplainerTool::test_can_handle_always_true         PASSED
-tests/test_all.py::TestFallbackExplainerTool::test_no_keywords                    PASSED
-tests/test_all.py::TestFallbackExplainerTool::test_division_by_zero_explanation   PASSED
-tests/test_all.py::TestFallbackExplainerTool::test_no_city_explanation            PASSED
-tests/test_all.py::TestFallbackExplainerTool::test_generic_fallback               PASSED
-tests/test_all.py::TestFallbackExplainerTool::test_steps_populated                PASSED
-tests/test_all.py::TestAgentControllerRouting::test_routes_to_calculator          PASSED
-tests/test_all.py::TestAgentControllerRouting::test_routes_to_weather             PASSED
-tests/test_all.py::TestAgentControllerRouting::test_routes_to_text                PASSED
-tests/test_all.py::TestAgentControllerRouting::test_routes_to_base64              PASSED
-tests/test_all.py::TestAgentControllerRouting::test_steps_numbered                PASSED
-tests/test_all.py::TestAgentControllerRouting::test_timestamp_present             PASSED
-tests/test_all.py::TestAgentControllerRouting::test_unknown_task_error            PASSED
-tests/test_all.py::TestAgentControllerRouting::test_five_tools_listed             PASSED
-tests/test_all.py::TestAgentControllerRouting::test_fallback_not_in_normal_run    PASSED
-tests/test_all.py::TestAgentControllerFallback::test_div_by_zero_activates_fallback PASSED
-tests/test_all.py::TestAgentControllerFallback::test_div_by_zero_has_suggestions  PASSED
-tests/test_all.py::TestAgentControllerFallback::test_div_by_zero_trace_shows_chain PASSED
-tests/test_all.py::TestAgentControllerFallback::test_no_city_activates_fallback   PASSED
-tests/test_all.py::TestAgentControllerFallback::test_natural_language_div_zero    PASSED
-tests/test_all.py::TestAgentControllerFallback::test_fallback_response_no_error   PASSED
-tests/test_all.py::TestAgentControllerFallback::test_fallback_output_is_string    PASSED
-tests/test_all.py::TestOrchestratorDetection::test_detects_then                   PASSED
-tests/test_all.py::TestOrchestratorDetection::test_detects_and_then               PASSED
-tests/test_all.py::TestOrchestratorDetection::test_detects_followed_by            PASSED
-tests/test_all.py::TestOrchestratorDetection::test_detects_comma_then             PASSED
-tests/test_all.py::TestOrchestratorDetection::test_single_task_not_multistep      PASSED
-tests/test_all.py::TestOrchestratorDetection::test_splits_correctly               PASSED
-tests/test_all.py::TestOrchestratorDetection::test_splits_three_parts             PASSED
-tests/test_all.py::TestOrchestratorInjection::test_injects_the_result             PASSED
-tests/test_all.py::TestOrchestratorInjection::test_injects_it                     PASSED
-tests/test_all.py::TestOrchestratorInjection::test_no_injection_when_quoted       PASSED
-tests/test_all.py::TestOrchestratorInjection::test_no_injection_without_ref       PASSED
-tests/test_all.py::TestMultiStepEndToEnd::test_encode_then_decode                 PASSED
-tests/test_all.py::TestMultiStepEndToEnd::test_encode_then_count_characters       PASSED
-tests/test_all.py::TestMultiStepEndToEnd::test_calculate_then_reverse             PASSED
-tests/test_all.py::TestMultiStepEndToEnd::test_uppercase_then_reverse             PASSED
-tests/test_all.py::TestMultiStepEndToEnd::test_three_stage_chain                  PASSED
-tests/test_all.py::TestMultiStepEndToEnd::test_tools_used_contains_both           PASSED
-tests/test_all.py::TestMultiStepEndToEnd::test_steps_contain_stage_labels         PASSED
-tests/test_all.py::TestMultiStepEndToEnd::test_sub_results_structure              PASSED
-tests/test_all.py::TestMultiStepEndToEnd::test_single_step_not_treated_as_multistep PASSED
+tests/test_all.py::TestTextProcessorTool::test_uppercase PASSED                                          [  1%] 
+tests/test_all.py::TestTextProcessorTool::test_lowercase PASSED                                          [  2%] 
+tests/test_all.py::TestTextProcessorTool::test_title_case PASSED                                         [  3%] 
+tests/test_all.py::TestTextProcessorTool::test_reverse PASSED                                            [  4%] 
+tests/test_all.py::TestTextProcessorTool::test_word_count PASSED                                         [  5%] 
+tests/test_all.py::TestTextProcessorTool::test_palindrome_true PASSED                                    [  6%]
+tests/test_all.py::TestTextProcessorTool::test_palindrome_false PASSED                                   [  7%] 
+tests/test_all.py::TestTextProcessorTool::test_steps_populated PASSED                                    [  8%] 
+tests/test_all.py::TestTextProcessorTool::test_can_handle_positive PASSED                                [  9%] 
+tests/test_all.py::TestTextProcessorTool::test_can_handle_negative PASSED                                [ 10%] 
+tests/test_all.py::TestCalculatorTool::test_addition PASSED                                              [ 11%] 
+tests/test_all.py::TestCalculatorTool::test_subtraction PASSED                                           [ 12%]
+tests/test_all.py::TestCalculatorTool::test_multiplication PASSED                                        [ 13%] 
+tests/test_all.py::TestCalculatorTool::test_division PASSED                                              [ 15%] 
+tests/test_all.py::TestCalculatorTool::test_power PASSED                                                 [ 16%] 
+tests/test_all.py::TestCalculatorTool::test_sqrt PASSED                                                  [ 17%] 
+tests/test_all.py::TestCalculatorTool::test_sqrt_natural PASSED                                          [ 18%] 
+tests/test_all.py::TestCalculatorTool::test_word_ops PASSED                                              [ 19%] 
+tests/test_all.py::TestCalculatorTool::test_complex_expr PASSED                                          [ 20%]
+tests/test_all.py::TestCalculatorTool::test_division_by_zero PASSED                                      [ 21%] 
+tests/test_all.py::TestCalculatorTool::test_can_handle_positive PASSED                                   [ 22%] 
+tests/test_all.py::TestCalculatorTool::test_can_handle_negative PASSED                                   [ 23%] 
+tests/test_all.py::TestWeatherMockTool::test_known_city PASSED                                           [ 24%] 
+tests/test_all.py::TestWeatherMockTool::test_unknown_city_fallback PASSED                                [ 25%] 
+tests/test_all.py::TestWeatherMockTool::test_has_humidity PASSED                                         [ 26%] 
+tests/test_all.py::TestWeatherMockTool::test_has_wind PASSED                                             [ 27%] 
+tests/test_all.py::TestWeatherMockTool::test_has_fahrenheit PASSED                                       [ 29%] 
+tests/test_all.py::TestWeatherMockTool::test_no_city_error PASSED                                        [ 30%] 
+tests/test_all.py::TestWeatherMockTool::test_bare_forecast_error PASSED                                  [ 31%] 
+tests/test_all.py::TestWeatherMockTool::test_can_handle_positive PASSED                                  [ 32%] 
+tests/test_all.py::TestWeatherMockTool::test_can_handle_negative PASSED                                  [ 33%]
+tests/test_all.py::TestBase64Tool::test_encode_hello_world PASSED                                        [ 34%] 
+tests/test_all.py::TestBase64Tool::test_encode_empty_string PASSED                                       [ 35%] 
+tests/test_all.py::TestBase64Tool::test_encode_special_chars PASSED                                      [ 36%] 
+tests/test_all.py::TestBase64Tool::test_encode_numbers PASSED                                            [ 37%] 
+tests/test_all.py::TestBase64Tool::test_decode_hello_world PASSED                                        [ 38%] 
+tests/test_all.py::TestBase64Tool::test_decode_without_padding PASSED                                    [ 39%]
+tests/test_all.py::TestBase64Tool::test_decode_invalid_raises_error PASSED                               [ 40%] 
+tests/test_all.py::TestBase64Tool::test_decode_reverses_encode PASSED                                    [ 41%] 
+tests/test_all.py::TestBase64Tool::test_url_safe_encode PASSED                                           [ 43%] 
+tests/test_all.py::TestBase64Tool::test_url_safe_decode PASSED                                           [ 44%] 
+tests/test_all.py::TestBase64Tool::test_validate_valid_string PASSED                                     [ 45%] 
+tests/test_all.py::TestBase64Tool::test_validate_invalid_string PASSED                                   [ 46%] 
+tests/test_all.py::TestBase64Tool::test_info_returns_metadata PASSED                                     [ 47%]
+tests/test_all.py::TestBase64Tool::test_info_invalid_string_errors PASSED                                [ 48%] 
+tests/test_all.py::TestBase64Tool::test_auto_detect_decodes_valid_b64 PASSED                             [ 49%] 
+tests/test_all.py::TestBase64Tool::test_auto_detect_encodes_plaintext PASSED                             [ 50%] 
+tests/test_all.py::TestBase64Tool::test_steps_populated PASSED                                           [ 51%] 
+tests/test_all.py::TestBase64Tool::test_steps_include_operation PASSED                                   [ 52%] 
+tests/test_all.py::TestBase64Tool::test_can_handle_base64 PASSED                                         [ 53%] 
+tests/test_all.py::TestBase64Tool::test_cannot_handle_weather PASSED                                     [ 54%] 
+tests/test_all.py::TestFallbackExplainerTool::test_can_handle_always_true PASSED                         [ 55%] 
+tests/test_all.py::TestFallbackExplainerTool::test_no_keywords PASSED                                    [ 56%] 
+tests/test_all.py::TestFallbackExplainerTool::test_div_by_zero_explanation PASSED                        [ 58%] 
+tests/test_all.py::TestFallbackExplainerTool::test_no_city_explanation PASSED                            [ 59%] 
+tests/test_all.py::TestFallbackExplainerTool::test_generic_fallback PASSED                               [ 60%] 
+tests/test_all.py::TestFallbackExplainerTool::test_steps_populated PASSED                                [ 61%]
+tests/test_all.py::TestAgentControllerRouting::test_routes_to_calculator PASSED                          [ 62%] 
+tests/test_all.py::TestAgentControllerRouting::test_routes_to_weather PASSED                             [ 63%] 
+tests/test_all.py::TestAgentControllerRouting::test_routes_to_text PASSED                                [ 64%] 
+tests/test_all.py::TestAgentControllerRouting::test_routes_to_base64 PASSED                              [ 65%] 
+tests/test_all.py::TestAgentControllerRouting::test_steps_numbered PASSED                                [ 66%] 
+tests/test_all.py::TestAgentControllerRouting::test_timestamp_present PASSED                             [ 67%]
+tests/test_all.py::TestAgentControllerRouting::test_unknown_task_error PASSED                            [ 68%] 
+tests/test_all.py::TestAgentControllerRouting::test_five_tools_listed PASSED                             [ 69%] 
+tests/test_all.py::TestAgentControllerRouting::test_fallback_not_in_normal_run PASSED                    [ 70%] 
+tests/test_all.py::TestAgentControllerFallback::test_div_by_zero_activates_fallback PASSED               [ 72%] 
+tests/test_all.py::TestAgentControllerFallback::test_div_by_zero_has_suggestions PASSED                  [ 73%] 
+tests/test_all.py::TestAgentControllerFallback::test_div_by_zero_trace_shows_chain PASSED                [ 74%] 
+tests/test_all.py::TestAgentControllerFallback::test_no_city_activates_fallback PASSED                   [ 75%]
+tests/test_all.py::TestAgentControllerFallback::test_natural_language_div_zero PASSED                    [ 76%] 
+tests/test_all.py::TestAgentControllerFallback::test_fallback_response_no_error PASSED                   [ 77%] 
+tests/test_all.py::TestAgentControllerFallback::test_fallback_output_is_string PASSED                    [ 78%] 
+tests/test_all.py::TestOrchestratorDetection::test_detects_then PASSED                                   [ 79%] 
+tests/test_all.py::TestOrchestratorDetection::test_detects_and_then PASSED                               [ 80%] 
+tests/test_all.py::TestOrchestratorDetection::test_detects_followed_by PASSED                            [ 81%] 
+tests/test_all.py::TestOrchestratorDetection::test_detects_comma_then PASSED                             [ 82%]
+tests/test_all.py::TestOrchestratorDetection::test_single_task_not_multistep PASSED                      [ 83%] 
+tests/test_all.py::TestOrchestratorDetection::test_splits_correctly PASSED                               [ 84%] 
+tests/test_all.py::TestOrchestratorDetection::test_splits_three_parts PASSED                             [ 86%] 
+tests/test_all.py::TestOrchestratorInjection::test_injects_the_result PASSED                             [ 87%] 
+tests/test_all.py::TestOrchestratorInjection::test_injects_it PASSED                                     [ 88%] 
+tests/test_all.py::TestOrchestratorInjection::test_no_injection_when_quoted PASSED                       [ 89%] 
+tests/test_all.py::TestOrchestratorInjection::test_no_injection_without_ref PASSED                       [ 90%]
+tests/test_all.py::TestMultiStepEndToEnd::test_encode_then_decode PASSED                                 [ 91%] 
+tests/test_all.py::TestMultiStepEndToEnd::test_encode_then_count_characters PASSED                       [ 92%] 
+tests/test_all.py::TestMultiStepEndToEnd::test_calculate_then_reverse PASSED                             [ 93%] 
+tests/test_all.py::TestMultiStepEndToEnd::test_uppercase_then_reverse PASSED                             [ 94%] 
+tests/test_all.py::TestMultiStepEndToEnd::test_three_stage_chain PASSED                                  [ 95%] 
+tests/test_all.py::TestMultiStepEndToEnd::test_tools_used_contains_both PASSED                           [ 96%]
+tests/test_all.py::TestMultiStepEndToEnd::test_steps_contain_stage_labels PASSED                         [ 97%] 
+tests/test_all.py::TestMultiStepEndToEnd::test_sub_results_structure PASSED                              [ 98%] 
+tests/test_all.py::TestMultiStepEndToEnd::test_single_step_not_treated_as_multistep PASSED               [100%] 
 
-================================================ 55 passed in 0.61s ================================================
+================================================ 93 passed in 0.30s ================================================
 ```
 
 ---
@@ -569,15 +569,16 @@ Not implemented. Planned JWT-based roles: `user` (own tasks only) and `admin` (a
 
 | Phase | Time |
 |---|---|
-| Architecture + scaffold | 30 min |
+| Architecture + scaffold | 60 min |
 | CalculatorTool, TextProcessorTool, WeatherMockTool | 60 min |
-| AgentController (scoring, fallback) | 30 min |
-| Base64Tool (all 6 operations) | 45 min |
+| AgentController (scoring, fallback) | 60 min |
+| Base64Tool (all 6 operations) | 60 min |
 | MultiStepOrchestrator (detection, splitting, injection, trace merge) | 60 min |
 | SQLite storage + FastAPI routes | 30 min |
 | React frontend (all components + styling) | 60 min |
-| Tests (55 cases) | 45 min |
-| Docker, Nginx, README | 30 min |
+| Tests (93 cases) | 40 min |
+| Docker, Nginx, README | 45 min |
+| Error Handling, Code Cleanup, Issue Fixes | 45 mins |
 
 ---
 
