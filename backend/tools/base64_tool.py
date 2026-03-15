@@ -113,7 +113,6 @@ class Base64Tool(BaseTool):
     decode   – standard Base64 decode back to plaintext
     url_encode  – URL-safe Base64 encode (replaces +/ with -_)
     url_decode  – URL-safe Base64 decode
-    validate – check whether a string is valid Base64
     info     – inspect an encoded string (length, padding, decoded preview)
     auto     – detect from context: if input looks like Base64, decode it;
                otherwise encode it
@@ -123,7 +122,6 @@ class Base64Tool(BaseTool):
     "base64 encode 'hello world'"
     "decode 'aGVsbG8gd29ybGQ='"
     "url-safe base64 encode 'user@example.com'"
-    "validate 'aGVsbG8='"
     "base64 info 'SGVsbG8gV29ybGQ='"
     "base64 'auto detect me'"           → auto mode
     """
@@ -170,8 +168,6 @@ class Base64Tool(BaseTool):
             return self._encode(target, steps, url_safe=True)
         elif operation == "url_decode":
             return self._decode(target, steps, url_safe=True)
-        elif operation == "validate":
-            return self._validate(target, steps)
         elif operation == "info":
             return self._info(target, steps)
         else:  # auto

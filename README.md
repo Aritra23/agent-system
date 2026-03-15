@@ -17,7 +17,7 @@ A lightweight full-stack agentic task runner built with **FastAPI** and **React*
   - [Multi-Step Orchestration Logic](#multi-step-orchestration-logic)
 - [Available Tools](#available-tools)
 - [API Reference](#api-reference)
-- [Example Tasks](#example-tasks)
+- [Example Tasks](#multi-step-chain-examples)
 - [Test Results](#test-results)
 - [Bonus Features](#bonus-features)
 - [Assumptions & Trade-offs](#assumptions--trade-offs)
@@ -322,7 +322,7 @@ Never selected normally (empty keywords, zero score). Activated automatically wh
 
 ---
 
-## Multi-Step Chain Examples
+### Multi-Step Chain Examples
 
 ### Example 1 — Encode then decode (round-trip)
 ```
