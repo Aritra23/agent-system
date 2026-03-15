@@ -213,8 +213,9 @@ const styles = {
   },
   headerSub: {
     fontFamily: 'var(--font-mono)',
-    fontSize: '11px',
-    color: 'var(--text-muted)',
+    fontSize: '12px',
+    fontWeight: 600,
+    color: '#e8ecf0',
     letterSpacing: '0.1em',
   },
   headerRight: {
@@ -231,9 +232,10 @@ const styles = {
   },
   statusText: {
     fontFamily: 'var(--font-mono)',
-    fontSize: '10px',
+    fontSize: '11px',
+    fontWeight: 700,
     letterSpacing: '0.12em',
-    color: 'var(--text-muted)',
+    color: 'Dynamic — green / red / grey',
   },
   errorBanner: {
     display: 'flex',
@@ -298,9 +300,10 @@ const styles = {
   },
   sectionTitle: {
     fontFamily: 'var(--font-mono)',
-    fontSize: '10px',
+    fontSize: '11px',
+    fontWeight: 700,
     letterSpacing: '0.15em',
-    color: 'var(--text-muted)',
+    color: '#e8ecf0',
   },
   sectionCount: {
     fontFamily: 'var(--font-mono)',
