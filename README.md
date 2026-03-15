@@ -584,13 +584,13 @@ Not implemented. Planned JWT-based roles: `user` (own tasks only) and `admin` (a
 | Architecture + scaffold | 60 min |
 | CalculatorTool, TextProcessorTool, WeatherMockTool | 60 min |
 | AgentController (scoring, fallback) | 60 min |
-| Base64Tool (all 6 operations) | 60 min |
+| Base64Tool (all 6 operations) | 30 min |
 | MultiStepOrchestrator (detection, splitting, injection, trace merge) | 60 min |
 | SQLite storage + FastAPI routes | 30 min |
 | React frontend (all components + styling) | 60 min |
-| Tests (93 cases) | 40 min |
-| Docker, Nginx, README | 45 min |
-| Error Handling, Code Cleanup, Issue Fixes | 60 mins |
+| Tests (93 cases) | 30 min |
+| Docker, Nginx, README | 60 min |
+| Error Handling, Code Cleanup, Issue Fixes | 40 mins |
 
 ---
 
