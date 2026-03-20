@@ -15,6 +15,15 @@ A lightweight full-stack agentic task runner built with **FastAPI** and **React*
   - [File Structure](#file-structure)
   - [Single-Step Decision Logic](#single-step-decision-logic)
   - [Multi-Step Orchestration Logic](#multi-step-orchestration-logic)
+- [Tool Scoring System](#tool-scoring-system)
+  - [Why a Scoring Model](#why-a-scoring-model)
+  - [Two Layers of Evidence](#two-layers-of-evidence)
+  - [Score Reference Table](#score-reference-table)
+  - [CalculatorTool Scoring](#calculatortool-scoring)
+  - [WeatherMockTool Scoring](#weathermocktool-scoring)
+  - [Base64Tool Scoring](#base64tool-scoring)
+  - [TextProcessorTool Scoring](#textprocessortool-scoring)
+  - [FallbackExplainerTool Scoring](#fallbackexplainertool-scoring)
 - [Available Tools](#available-tools)
 - [API Reference](#api-reference)
 - [Example Tasks](#multi-step-chain-examples)
@@ -237,6 +246,168 @@ Input: "base64 encode 'hello' then count the characters of the result"
 If the sub-task already contains a quoted string, injection is skipped — the explicit target takes priority.
 
 **Chain stops on the first error.** The completed stages are returned as partial results with an `error` field on the response.
+
+---
+
+## Tool Scoring System
+
+The agent has no hard-coded routing rules. Instead, every tool is **scored independently against the task text**, and the highest-scoring tool is selected. This makes the system deterministic, testable, and easy to extend — adding a new tool only requires defining its scoring rules in `_score_tool()` with no changes to the routing logic itself.
+
+### Why a Scoring Model
+
+A simple `if/elif` chain would work for obvious cases but breaks down for ambiguous input, overlapping keywords, and chained tasks where an injected previous output could accidentally resemble a different domain. A numeric scoring model handles these gracefully: every signal adds weight, and the tool with the most cumulative evidence wins.
+
+### Two Layers of Evidence
+
+**Layer 1 — Base keyword match (+10)**
+
+Every tool defines a `keywords` list in its class. The base class `can_handle()` checks whether any keyword appears in the lowercased input. A match adds +10. This is the broad signal: "this tool is at least relevant."
+
+**Layer 2 — Domain boosters (+15 / +20 / +25)**
+
+Applied only for specific tool types using regex patterns. These score higher because they represent stronger, less ambiguous signals — a tool that fires a booster is much more likely to be the right choice.
+
+**Important:** All pattern matching runs on `command_only` — the task string with any quoted payload stripped out first. This prevents injected data from a previous chain step (e.g. a weather report containing `"24°C / 75.2°F"`) from skewing tool selection via stray numbers or domain keywords buried inside the quoted value.
+
+### Score Reference Table
+
+| Tool | Base | Max Booster | **Max Total** | When Max Fires |
+|---|---|---|---|---|
+| `CalculatorTool` | +10 | +35 | **+45** | `"calculate 6 * 7"` — keyword + numeric-op + math keyword both fire |
+| `Base64Tool` | +10 | +25 | **+35** | `"base64 encode 'hello'"` — keyword + explicit b64 word |
+| `WeatherMockTool` | +10 | +20 | **+30** | `"weather in Tokyo"` — keyword + strong domain word |
+| `TextProcessorTool` | +10 | +15 | **+25** | `"uppercase 'hello'"` — keyword + text-op word |
+| `FallbackExplainerTool` | 0 | 0 | **0** | Never scored — activated only on tool error |
+
+The ceilings are intentionally staggered so domain-specific tools always outbid the catch-all (`TextProcessorTool`) when they have a clear signal.
+
+---
+
+### CalculatorTool Scoring
+
+```
+Keywords (+10): "calculate", "compute", "plus", "add", "minus", "subtract",
+                "times", "multiply", "divided by", "divide", "sum", "sqrt",
+                "power", "what is", "+", "-", "*", "/"
+
+Booster A (+20): numeric expression pattern
+  re.search(r'\d+\s*[\+\-\*\/\%\^]\s*\d+', command_only)
+  e.g.  "3 + 5",  "6 * 7",  "2 ** 8",  "100 / 4"
+
+Booster B (+15): math keyword paired with a number
+  re.search(r'\b(sqrt|square root|calculate|compute|what is \d)', lowered_cmd)
+  e.g.  "calculate 6 * 7",  "what is 100 / 4",  "sqrt(16)"
+```
+
+**Why +20 for the numeric-operator pattern?**
+Two numbers with an operator between them — `6 * 7`, `3 + 5` — is the clearest possible signal of arithmetic intent. No other tool in the system processes numeric expressions. The +20 boost puts `CalculatorTool` at +30, safely above `TextProcessorTool`'s maximum of +25.
+
+**Why +15 for the keyword-plus-number pattern?**
+Phrases like `"calculate the square root of 25"` or `"what is 2 to the power of 8"` don't have an operator between two numbers yet, but they're unambiguously math. The +15 ensures the tool wins even when only one booster fires.
+
+**Why two boosters instead of one?**
+They cover different phrasing styles. Booster A handles symbolic math (`3 + 5`). Booster B handles wordy math (`calculate 6 * 7`). A task can trigger both, reaching +45 and winning decisively.
+
+**Maximum score: +45**
+
+---
+
+### WeatherMockTool Scoring
+
+```
+Keywords (+10): "weather", "forecast", "temperature", "rain", "sunny",
+                "cloudy", "humidity", "wind", "climate", "degrees", "snow"
+
+Booster (+20): strong domain keyword
+  re.search(r'\bweather\b|\bforecast\b|\btemperature\b', lowered_cmd)
+  e.g.  "weather in Tokyo",  "forecast for London",  "temperature in Dubai"
+```
+
+**Why only one booster?**
+The weather domain is narrow and its keywords are unambiguous. No other tool deals with city-based weather lookups. A task containing `"weather"` or `"forecast"` is almost certainly a weather query — a single strong booster at +20 is sufficient.
+
+**Why are `"rain"`, `"sunny"`, `"cloudy"` only in keywords and not in the booster?**
+Those words are contextually ambiguous — `"it's sunny"` or `"rainy day"` could appear in any kind of text. Only `weather`, `forecast`, and `temperature` as standalone words are strong enough signals to justify the +20 boost.
+
+**Why `\bweather\b` with word boundaries?**
+Without boundaries, `"weathered"` would match `"weather"` and trigger the booster incorrectly. The `\b` ensures only the complete word counts.
+
+**Maximum score: +30**
+
+---
+
+### Base64Tool Scoring
+
+```
+Keywords (+10): "base64", "b64", "encode", "decode",
+                "encoding", "decoding", "urlsafe", "url-safe"
+
+Booster A (+25): explicit base64 / b64 keyword  [mutually exclusive with B]
+  re.search(r'\bbase64\b|\bb64\b', lowered_cmd)
+  e.g.  "base64 encode 'hello'",  "b64 decode this"
+
+Booster B (+10): encode/decode without "base64"  [only if A did not fire]
+  re.search(r'\bencode\b|\bdecode\b', lowered_cmd)
+  e.g.  "encode 'hello world'",  "decode 'aGVsbG8='"
+```
+
+**Why is the "base64" booster the highest in the system at +25?**
+`base64` and `b64` are completely unambiguous — no other tool or domain uses these words. When the user writes `"base64 encode 'hello'"` there is zero ambiguity about which tool is needed. The +25 ensures `Base64Tool` wins at +35, beating every other tool's maximum score.
+
+**Why are Booster A and B mutually exclusive (`elif`)?**
+If a task contains both `"base64"` and `"encode"`, Booster A (+25) already fires and Booster B would add redundant weight. The `elif` prevents double-counting and keeps the logic clean and predictable.
+
+**Why is `"encode"` alone only worth +10 (Booster B), not +25?**
+`"encode"` on its own is genuinely ambiguous — it could mean URL encoding, HTML entity encoding, character encoding, or something else entirely. The lower score reflects lower confidence. If the user explicitly writes `"base64"`, that ambiguity disappears and Booster A fires at full strength.
+
+**Maximum score: +35** (base + Booster A)
+
+---
+
+### TextProcessorTool Scoring
+
+```
+Keywords (+10): "uppercase", "lower", "reverse", "word count", "palindrome",
+                "title case", "characters", "count", "camelcase", "snake_case",
+                "trim", "length"
+
+Booster (+15): explicit text operation keyword
+  text_ops = ["uppercase", "lowercase", "word count", "reverse",
+               "palindrome", "capitalize", "title case", "camelcase",
+               "snake_case", "char count", "character count",
+               "characters", "count the char"]
+  if any(op in lowered_cmd for op in text_ops): score += 15
+  e.g.  "uppercase 'hello'",  "palindrome check 'racecar'",  "count the characters"
+```
+
+**Why the lowest maximum score (+25)?**
+`TextProcessorTool` is the **catch-all**. Its keywords are common English words — `"count"`, `"reverse"`, `"upper"` — that could appear in almost any sentence. Keeping its ceiling at +25 ensures it never outbids a domain-specific tool when that tool has a clear signal. If `CalculatorTool` scores +30 and `TextProcessorTool` scores +25 on the same input, the math tool correctly wins.
+
+**Why a list match instead of a regex for the booster?**
+Text operation names are exact English words with no structural pattern to compress into a regex. A list + `any()` check is simpler to read, trivially extensible (just append a string), and has no surprising partial-match behaviour. Words like `"palindrome"`, `"camelcase"`, and `"snake_case"` are specific enough that false positives are not a concern.
+
+**Why were `"characters"` and `"count"` added to the booster list?**
+This was added to support multi-step chaining. When the orchestrator injects a previous output and produces a sub-task like `"count the characters \"aGk=\""`, the scorer needs to recognise that as a text operation even without the compound phrase `"character count"`. Adding `"count"` and `"characters"` separately ensures `TextProcessorTool` fires at full strength on injected sub-tasks.
+
+**Maximum score: +25**
+
+---
+
+### FallbackExplainerTool Scoring
+
+```
+Keywords: []  (empty — deliberately)
+Boosters: none
+
+Score: always 0
+```
+
+`FallbackExplainerTool` is **never selected by the scoring system**. It is excluded from the scoring loop entirely in `_select_tool()`. Instead, it is activated by the fallback chain in `_fallback_tool()` when the selected tool returns an error and no other domain tool can handle the input.
+
+Before execution, the controller calls `fallback.prepare(error)` to inject the exact error context, allowing the tool to return a tailored explanation with actionable suggestions rather than a generic message. Both the primary tool name and `FallbackExplainerTool` appear in `tools_used[]` so the trace is fully transparent.
+
+**Why empty keywords instead of a very low score?**
+Empty keywords mean `can_handle()` always returns `True` but the score loop skips the tool entirely (via `isinstance` guard). This is cleaner than a score of 0 — a tool scoring 0 would still appear in the candidates dict and could theoretically win a tie. Skipping it entirely removes any possibility of accidental selection.
 
 ---
 
